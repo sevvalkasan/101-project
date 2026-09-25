@@ -1,0 +1,29 @@
+name: masabul
+description: Location-based 101 Okey table discovery app.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  dio: ^5.7.0
+  firebase_auth: ^5.3.1
+  firebase_core: ^3.6.0
+  flutter_riverpod: ^2.5.1
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  json_serializable: ^6.8.0
+  mockito: ^5.4.4
+  http_mock_adapter: ^0.6.1
+
+flutter:
+  uses-material-design: true

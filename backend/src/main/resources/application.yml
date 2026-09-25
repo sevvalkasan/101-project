@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: masabul-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/masabul}
+    username: ${DATABASE_USERNAME:masabul}
+    password: ${DATABASE_PASSWORD:masabul_dev_password}
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+masabul:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}
+  firebase:
+    service-account-path: ${FIREBASE_SERVICE_ACCOUNT_PATH:/Users/sevval/Downloads/masabul-sevval-dev-firebase-adminsdk-fbsvc-79fcd885be.json}
+    service-account-json-base64: ${FIREBASE_SERVICE_ACCOUNT_JSON_BASE64:}

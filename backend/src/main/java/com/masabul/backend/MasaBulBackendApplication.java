@@ -1,0 +1,12 @@
+package com.masabul.backend;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class MasaBulBackendApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(MasaBulBackendApplication.class, args);
+    }
+}

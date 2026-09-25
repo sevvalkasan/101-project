@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "594286044142",
+    "project_id": "masabul-sevval-dev",
+    "storage_bucket": "masabul-sevval-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:594286044142:android:322516d11863cf89fd24ff",
+        "android_client_info": {
+          "package_name": "com.example.masabul"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD699mdlviudrzGV_Kow8JobZzwAEsM6Ww"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
