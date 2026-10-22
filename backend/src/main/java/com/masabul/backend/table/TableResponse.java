@@ -8,6 +8,8 @@ public record TableResponse(
     String title,
     String venueName,
     HostSummaryResponse host,
+    double latitude,
+    double longitude,
     int currentPlayers,
     int maxPlayers,
     int availableSpots,
@@ -25,6 +27,8 @@ public record TableResponse(
                 table.getHost().getFullName(),
                 table.getHost().getAvatarUrl()
             ),
+            table.getLocation().getY(),
+            table.getLocation().getX(),
             table.getCurrentPlayers(),
             table.getMaxPlayers(),
             table.getMaxPlayers() - table.getCurrentPlayers(),

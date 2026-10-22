@@ -1,6 +1,7 @@
 package com.masabul.backend.table;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 public record NearbyTableResponse(
@@ -8,6 +9,8 @@ public record NearbyTableResponse(
     String title,
     String venueName,
     HostSummaryResponse host,
+    double latitude,
+    double longitude,
     double distanceMeters,
     int availableSpots,
     OffsetDateTime createdAt
@@ -23,9 +26,11 @@ public record NearbyTableResponse(
                 projection.getHostFullName(),
                 projection.getHostAvatarUrl()
             ),
+            projection.getLatitude(),
+            projection.getLongitude(),
             projection.getDistanceMeters(),
             projection.getAvailableSpots(),
-            projection.getCreatedAt()
+            projection.getCreatedAt().atOffset(ZoneOffset.UTC)
         );
     }
 }

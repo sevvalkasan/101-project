@@ -1,9 +1,13 @@
 package com.masabul.backend.table;
 
 import com.masabul.backend.security.AuthenticatedUserPrincipal;
+import com.masabul.backend.request.TableRequestRepository;
+import com.masabul.backend.request.TableRequestStatus;
 import com.masabul.backend.user.User;
 import com.masabul.backend.user.UserService;
 import java.util.List;
+import java.util.Optional;
+import java.util.LinkedHashMap;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
@@ -20,11 +24,17 @@ public class TableService {
 
     private final OkeyTableRepository tableRepository;
     private final UserService userService;
+    private final TableRequestRepository requestRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), SRID_WGS84);
 
-    public TableService(OkeyTableRepository tableRepository, UserService userService) {
+    public TableService(
+        OkeyTableRepository tableRepository,
+        UserService userService,
+        TableRequestRepository requestRepository
+    ) {
         this.tableRepository = tableRepository;
         this.userService = userService;
+        this.requestRepository = requestRepository;
     }
 
     @Transactional
@@ -60,6 +70,33 @@ public class TableService {
             .stream()
             .map(NearbyTableResponse::from)
             .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<TableResponse> findMyActiveTable(AuthenticatedUserPrincipal principal) {
+        User host = userService.getCurrentUser(principal);
+        return tableRepository.findFirstByHostAndStatusInOrderByCreatedAtDesc(
+                host,
+                List.of(OkeyTableStatus.OPEN, OkeyTableStatus.FULL)
+            )
+            .map(TableResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TableResponse> findMyChatTables(AuthenticatedUserPrincipal principal) {
+        User user = userService.getCurrentUser(principal);
+        LinkedHashMap<java.util.UUID, OkeyTable> tables = new LinkedHashMap<>();
+        tableRepository.findFirstByHostAndStatusInOrderByCreatedAtDesc(
+                user,
+                List.of(OkeyTableStatus.OPEN, OkeyTableStatus.FULL)
+            )
+            .ifPresent(table -> tables.put(table.getId(), table));
+        requestRepository.findDetailedByUserAndStatus(user, TableRequestStatus.ACCEPTED)
+            .stream()
+            .map(com.masabul.backend.request.TableRequest::getTable)
+            .filter(table -> table.getStatus() != OkeyTableStatus.CANCELLED)
+            .forEach(table -> tables.putIfAbsent(table.getId(), table));
+        return tables.values().stream().map(TableResponse::from).toList();
     }
 
     private Point point(double longitude, double latitude) {

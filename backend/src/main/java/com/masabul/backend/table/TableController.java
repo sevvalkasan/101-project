@@ -9,6 +9,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.List;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,6 +49,22 @@ public class TableController {
         @RequestParam("limit") @Min(1) @Max(100) int limit
     ) {
         return tableService.findNearby(latitude, longitude, radiusMeters, limit);
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<TableResponse> myActiveTable(
+        @AuthenticationPrincipal AuthenticatedUserPrincipal principal
+    ) {
+        return tableService.findMyActiveTable(principal)
+            .map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    @GetMapping("/chats")
+    public List<TableResponse> myChatTables(
+        @AuthenticationPrincipal AuthenticatedUserPrincipal principal
+    ) {
+        return tableService.findMyChatTables(principal);
     }
 
     @PostMapping("/{tableId}/requests")

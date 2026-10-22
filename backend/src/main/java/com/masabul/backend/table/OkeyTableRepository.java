@@ -18,6 +18,11 @@ public interface OkeyTableRepository extends JpaRepository<OkeyTable, UUID> {
     @Query("select t from OkeyTable t where t.id = :id")
     Optional<OkeyTable> findByIdForUpdate(@Param("id") UUID id);
 
+    Optional<OkeyTable> findFirstByHostAndStatusInOrderByCreatedAtDesc(
+        User host,
+        List<OkeyTableStatus> statuses
+    );
+
     @Query(
         value = """
             SELECT
@@ -27,6 +32,8 @@ public interface OkeyTableRepository extends JpaRepository<OkeyTable, UUID> {
                 u.id AS hostId,
                 u.full_name AS hostFullName,
                 u.avatar_url AS hostAvatarUrl,
+                ST_Y(t.location::geometry) AS latitude,
+                ST_X(t.location::geometry) AS longitude,
                 ST_Distance(
                     t.location,
                     ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography

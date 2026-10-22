@@ -8,13 +8,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.masabul.backend.security.AuthenticatedUserPrincipal;
+import com.masabul.backend.request.TableRequestRepository;
 import com.masabul.backend.user.User;
 import com.masabul.backend.user.UserService;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -29,6 +34,9 @@ class TableServiceTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private TableRequestRepository requestRepository;
 
     @InjectMocks
     private TableService tableService;
@@ -97,6 +105,50 @@ class TableServiceTest {
 
         assertThat(result).isEmpty();
         verify(tableRepository).findNearbyOpenTables(40.0, 29.0, 1_000, 20);
+    }
+
+    @Test
+    void mapsNearbyProjectionTimestampToUtcOffsetDateTime() {
+        Instant createdAt = Instant.parse("2026-10-22T20:20:00Z");
+        NearbyTableProjection projection = org.mockito.Mockito.mock(NearbyTableProjection.class);
+        when(projection.getId()).thenReturn(UUID.randomUUID());
+        when(projection.getTitle()).thenReturn("Okey gecesi");
+        when(projection.getVenueName()).thenReturn("Moda Cafe");
+        when(projection.getHostId()).thenReturn(UUID.randomUUID());
+        when(projection.getHostFullName()).thenReturn("Host User");
+        when(projection.getLatitude()).thenReturn(40.987);
+        when(projection.getLongitude()).thenReturn(29.037);
+        when(projection.getDistanceMeters()).thenReturn(125.0);
+        when(projection.getAvailableSpots()).thenReturn(3);
+        when(projection.getCreatedAt()).thenReturn(createdAt);
+        when(tableRepository.findNearbyOpenTables(40.987, 29.037, 1_000, 20))
+            .thenReturn(List.of(projection));
+
+        NearbyTableResponse result = tableService.findNearby(40.987, 29.037, 1_000, 20).get(0);
+
+        assertThat(result.createdAt().toInstant()).isEqualTo(createdAt);
+        assertThat(result.createdAt().getOffset()).isEqualTo(java.time.ZoneOffset.UTC);
+    }
+
+    @Test
+    void returnsCurrentHostsActiveTableWithCoordinates() {
+        AuthenticatedUserPrincipal principal = principal();
+        User host = user();
+        Point location = new GeometryFactory().createPoint(new Coordinate(29.037, 40.987));
+        OkeyTable table = new OkeyTable(host, "Okey gecesi", "Moda Cafe", location);
+        ReflectionTestUtils.setField(table, "id", UUID.randomUUID());
+        when(userService.getCurrentUser(principal)).thenReturn(host);
+        when(tableRepository.findFirstByHostAndStatusInOrderByCreatedAtDesc(
+            host,
+            List.of(OkeyTableStatus.OPEN, OkeyTableStatus.FULL)
+        )).thenReturn(Optional.of(table));
+
+        Optional<TableResponse> result = tableService.findMyActiveTable(principal);
+
+        assertThat(result).isPresent();
+        assertThat(result.orElseThrow().latitude()).isEqualTo(40.987);
+        assertThat(result.orElseThrow().longitude()).isEqualTo(29.037);
+        assertThat(result.orElseThrow().currentPlayers()).isEqualTo(1);
     }
 
     private AuthenticatedUserPrincipal principal() {

@@ -1,6 +1,8 @@
 package com.masabul.backend.request;
 
 import com.masabul.backend.security.AuthenticatedUserPrincipal;
+import com.masabul.backend.notification.JoinRequestNotification;
+import com.masabul.backend.notification.RequestDecisionNotification;
 import com.masabul.backend.table.OkeyTable;
 import com.masabul.backend.table.OkeyTableRepository;
 import com.masabul.backend.table.OkeyTableStatus;
@@ -10,6 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,15 +22,18 @@ public class TableRequestService {
     private final TableRequestRepository requestRepository;
     private final OkeyTableRepository tableRepository;
     private final UserService userService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public TableRequestService(
         TableRequestRepository requestRepository,
         OkeyTableRepository tableRepository,
-        UserService userService
+        UserService userService,
+        ApplicationEventPublisher eventPublisher
     ) {
         this.requestRepository = requestRepository;
         this.tableRepository = tableRepository;
         this.userService = userService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -49,7 +55,9 @@ public class TableRequestService {
             throw new IllegalStateException("User already has a request for this table");
         }
 
-        return TableRequestResponse.from(requestRepository.save(new TableRequest(table, user)));
+        TableRequest saved = requestRepository.save(new TableRequest(table, user));
+        eventPublisher.publishEvent(new JoinRequestNotification(table.getHost().getId(), table.getId()));
+        return TableRequestResponse.from(saved);
     }
 
     @Transactional(readOnly = true)
@@ -80,6 +88,7 @@ public class TableRequestService {
 
         if (decision == RequestDecision.REJECT) {
             request.reject();
+            publishDecision(request);
             return TableRequestResponse.from(request);
         }
 
@@ -92,6 +101,7 @@ public class TableRequestService {
 
         request.accept();
         table.acceptPlayer();
+        publishDecision(request);
         if (table.getStatus() == OkeyTableStatus.FULL) {
             rejectRemainingPendingRequests(table, request.getId());
         }
@@ -115,7 +125,18 @@ public class TableRequestService {
         requestRepository.findByTableAndStatus(table, TableRequestStatus.PENDING)
             .stream()
             .filter(request -> !request.getId().equals(acceptedRequestId))
-            .forEach(TableRequest::rejectIfPending);
+            .forEach(request -> {
+                request.rejectIfPending();
+                publishDecision(request);
+            });
+    }
+
+    private void publishDecision(TableRequest request) {
+        eventPublisher.publishEvent(new RequestDecisionNotification(
+            request.getUser().getId(),
+            request.getTable().getId(),
+            request.getStatus()
+        ));
     }
 
     private void ensureHost(OkeyTable table, User user) {

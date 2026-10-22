@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../errors/api_exception.dart';
 import 'auth_interceptor.dart';
 
-const _defaultBaseUrl = String.fromEnvironment(
+const apiBaseUrl = String.fromEnvironment(
   'MASABUL_API_BASE_URL',
   defaultValue: 'http://localhost:8080',
 );
@@ -12,7 +12,7 @@ const _defaultBaseUrl = String.fromEnvironment(
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: _defaultBaseUrl,
+      baseUrl: apiBaseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 20),
       sendTimeout: const Duration(seconds: 20),

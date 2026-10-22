@@ -1,6 +1,6 @@
 package com.masabul.backend.table;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public interface NearbyTableProjection {
@@ -17,9 +17,13 @@ public interface NearbyTableProjection {
 
     String getHostAvatarUrl();
 
+    Double getLatitude();
+
+    Double getLongitude();
+
     Double getDistanceMeters();
 
     Integer getAvailableSpots();
 
-    OffsetDateTime getCreatedAt();
+    Instant getCreatedAt();
 }

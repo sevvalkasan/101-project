@@ -24,6 +24,19 @@ public interface TableRequestRepository extends JpaRepository<TableRequest, UUID
         from TableRequest r
         join fetch r.table t
         join fetch t.host
+        where r.user = :user and r.status = :status
+        order by r.respondedAt desc
+        """)
+    List<TableRequest> findDetailedByUserAndStatus(
+        @Param("user") User user,
+        @Param("status") TableRequestStatus status
+    );
+
+    @Query("""
+        select r
+        from TableRequest r
+        join fetch r.table t
+        join fetch t.host
         join fetch r.user
         where r.id = :id
         """)

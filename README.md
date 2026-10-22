@@ -10,6 +10,9 @@ MasaBul, yakındaki 101 Okey masalarını keşfetmek, yeni masa oluşturmak ve o
 - Yeni 101 Okey masası oluşturma ve iptal etme
 - Masaya katılım isteği gönderme ve istekleri yanıtlama
 - Masa katılımcıları için gerçek zamanlı sohbet altyapısı
+- Katılım istekleri ve kararları için push bildirimleri
+- Harita ve liste görünümleri
+- Ev sahibinin masa ve katılım isteklerini yönetmesi
 
 ## Teknolojiler
 
@@ -19,6 +22,10 @@ MasaBul, yakındaki 101 Okey masalarını keşfetmek, yeni masa oluşturmak ve o
 - Riverpod
 - Dio
 - Firebase Authentication
+- Firebase Cloud Messaging
+- flutter_map ve OpenStreetMap
+- Geolocator
+- STOMP WebSocket istemcisi
 
 ### Backend
 
@@ -127,10 +134,35 @@ flutter test
 flutter analyze
 ```
 
+## Güncel Durum
+
+Bu sürümde MVP'nin temel kullanıcı akışları kodlanmıştır:
+
+- Telefon numarasıyla giriş ve profil tamamlama
+- Konum izni alma ve yakındaki masaları harita/liste üzerinde gösterme
+- Masa oluşturma, aktif masayı görüntüleme ve iptal etme
+- Masaya katılım isteği gönderme; ev sahibinin kabul veya ret vermesi
+- Kabul edilen masa katılımcıları için sohbet listesi, mesaj geçmişi ve gerçek zamanlı mesajlaşma
+- FCM cihaz kaydı ile katılım isteği ve karar bildirimleri
+
+Son doğrulamada backend testleri başarıyla tamamlanmış, Flutter testleri geçmiş ve `flutter analyze` herhangi bir sorun bulmamıştır. PostGIS şema entegrasyon testi çalışan bir Docker/Testcontainers ortamı gerektirir.
+
+## Bilinen Eksikler
+
+- Gerçek cihazlarda uçtan uca bildirim ve APNs doğrulaması tamamlanmalıdır.
+- İki farklı kullanıcıyla masa kurma, katılım, sohbet ve bildirim akışları birlikte test edilmelidir.
+- Mobil widget ve entegrasyon testi kapsamı genişletilmelidir.
+- OpenStreetMap genel tile sunucusu production kullanımı için değerlendirilip uygun bir tile sağlayıcısı seçilmelidir.
+- Android release signing, iOS signing/bundle ayarları ve mağaza hazırlıkları tamamlanmalıdır.
+- Production backend, veritabanı, gizli ortam değişkenleri ve CI/CD kurulumu henüz yapılmamıştır.
+- Çevrimdışı kullanım, bağlantı yeniden deneme ve kullanıcıya gösterilen hata durumları geliştirilmelidir.
+
+Sürümdeki değişikliklerin özeti için [CHANGELOG.md](CHANGELOG.md) dosyasına bakın.
+
 ## Güvenlik
 
 Gerçek ortam parolalarını, `.env` dosyasını veya Firebase Admin servis hesabı anahtarını repoya göndermeyin. Örnek yapılandırmalar için yalnızca `.env.example` dosyasını kullanın.
 
 ## Durum
 
-Proje aktif olarak geliştirilmektedir.
+Proje aktif olarak geliştirilmektedir ve henüz production kullanıma hazır değildir.
